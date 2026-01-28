@@ -7,7 +7,7 @@ body {
   width: 280px;
   padding: 16px;
   margin: 0;
-  background: white;
+  background: #ffffff;
   color: #333;
 }
 
@@ -204,4 +204,61 @@ input[type="range"]::-moz-range-thumb {
   height: 1px;
   background: #e9ecef;
   margin: 10px 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #121316;
+    color: #eef0f4;
+  }
+
+  h3 {
+    color: #eef0f4;
+  }
+
+  button {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  }
+
+  button:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  }
+
+  .custom-angle,
+  .checkbox-container {
+    background: #1d2026;
+  }
+
+  .custom-angle label,
+  .checkbox-container label,
+  .slider-label {
+    color: #c9d1e3;
+  }
+
+  input[type="number"] {
+    background: #111319;
+    color: #eef0f4;
+    border-color: #2c3240;
+  }
+
+  input[type="number"]:focus {
+    border-color: #8aa0ff;
+  }
+
+  .slider-value {
+    background: #3d5afe;
+  }
+
+  input[type="range"] {
+    background: #2c3240;
+  }
+
+  input[type="range"]::-webkit-slider-thumb,
+  input[type="range"]::-moz-range-thumb {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  .divider {
+    background: #2c3240;
+  }
 }

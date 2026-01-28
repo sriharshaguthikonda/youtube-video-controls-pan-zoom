@@ -1,6 +1,6 @@
 # 🎬 YouTube Video Controls Extension
 
-A browser extension that adds basic video manipulation controls to YouTube, allowing you to rotate, zoom, and pan videos with precision. Honestly these should be built into YouTube by default, but here we are.
+A browser extension that adds basic video manipulation controls to YouTube, allowing you to rotate, zoom, and pan videos with precision. Honestly these should be built into YouTube by default, but here we are. The popup now supports light and dark modes to match your system theme.
 
 <div align="center">
   <img src="./images/controls.png" alt="Extension Popup">
