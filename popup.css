@@ -200,6 +200,22 @@ input[type="range"]::-moz-range-thumb {
   background: linear-gradient(135deg, #c82333 0%, #e8640a 100%);
 }
 
+.secondary-button {
+  width: 100%;
+  background: #f1f3f5;
+  color: #495057;
+  font-weight: 600;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+.secondary-button:hover {
+  background: #e9ecef;
+  transform: translateY(-1px);
+}
+
 .divider {
   height: 1px;
   background: #e9ecef;

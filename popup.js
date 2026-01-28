@@ -42,6 +42,11 @@ const MessageHandler = {
     }
   },
 
+  async setRememberPanZoom(isChecked) {
+    await chrome.storage.local.set({ rememberPanZoom: isChecked });
+    console.log("Saved remember pan/zoom preference:", isChecked);
+  },
+
   async getSettings() {
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -63,14 +68,25 @@ const MessageHandler = {
 
 async function loadCurrentSettings() {
   // Load persistence preference from storage
-  const result = await chrome.storage.local.get(["persistSettings"]);
+  const result = await chrome.storage.local.get([
+    "persistSettings",
+    "rememberPanZoom",
+  ]);
   const persistSettings =
     result.persistSettings !== undefined ? result.persistSettings : false;
   document.getElementById("persistSettings").checked = persistSettings;
   console.log("Loaded persistence preference:", persistSettings);
 
+  const rememberPanZoom =
+    result.rememberPanZoom !== undefined ? result.rememberPanZoom : false;
+  document.getElementById("rememberPanZoom").checked = rememberPanZoom;
+  console.log("Loaded remember pan/zoom preference:", rememberPanZoom);
+
   // Send persistence preference to content script
   await MessageHandler.setPersistence(persistSettings);
+
+  // Save remember pan/zoom preference
+  await MessageHandler.setRememberPanZoom(rememberPanZoom);
 
   // Load current video settings
   const settings = await MessageHandler.getSettings();
@@ -127,6 +143,11 @@ function resetAllControls() {
 
   // Apply the reset and save to storage
   MessageHandler.sendTransform(true); // Pass true to save to storage
+}
+
+async function resetSavedPanZoom() {
+  await chrome.storage.local.remove(["lastPanZoomSettings"]);
+  console.log("Cleared saved pan/zoom settings");
 }
 
 // Save current settings to storage
@@ -192,6 +213,18 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("change", (e) =>
       MessageHandler.setPersistence(e.target.checked)
     );
+
+  // Remember pan/zoom checkbox
+  document
+    .getElementById("rememberPanZoom")
+    .addEventListener("change", (e) =>
+      MessageHandler.setRememberPanZoom(e.target.checked)
+    );
+
+  // Reset saved pan/zoom
+  document
+    .getElementById("resetPanZoom")
+    .addEventListener("click", resetSavedPanZoom);
 
   // Reset button
   document

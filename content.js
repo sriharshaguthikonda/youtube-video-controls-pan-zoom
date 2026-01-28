@@ -4,6 +4,7 @@ let lastURL = null;
 const DEBUG = false; // Debug flag for logging
 let styleObserver = null; // Mutation observer for style changes
 let lastAppliedSettings = null; // Keep track of last applied settings
+let notificationTimeout = null;
 
 // Style properties to track
 const STYLE_PROPERTIES = [
@@ -45,6 +46,71 @@ function restoreOriginalStyles(video) {
 
 function isDefaultTransform(angle, zoom, fill, panX, panY) {
   return angle === 0 && zoom === 1 && panX === 0 && panY === 0 && !fill;
+}
+
+function isPanZoomActive(zoom, panX, panY) {
+  return zoom !== 1 || panX !== 0 || panY !== 0;
+}
+
+function showPanZoomNotification() {
+  const existing = document.getElementById("yt-pan-zoom-notification");
+  if (existing) {
+    existing.remove();
+  }
+
+  if (notificationTimeout) {
+    clearTimeout(notificationTimeout);
+  }
+
+  const notification = document.createElement("div");
+  notification.id = "yt-pan-zoom-notification";
+  notification.textContent = "Pan & zoom active";
+  notification.style.position = "fixed";
+  notification.style.top = "16px";
+  notification.style.right = "16px";
+  notification.style.zIndex = "99999";
+  notification.style.padding = "10px 14px";
+  notification.style.background = "rgba(20, 20, 20, 0.85)";
+  notification.style.color = "#fff";
+  notification.style.fontSize = "13px";
+  notification.style.borderRadius = "8px";
+  notification.style.boxShadow = "0 6px 18px rgba(0, 0, 0, 0.3)";
+  notification.style.opacity = "0";
+  notification.style.transform = "translateY(-6px)";
+  notification.style.transition = "opacity 0.2s ease, transform 0.2s ease";
+
+  document.body.appendChild(notification);
+
+  requestAnimationFrame(() => {
+    notification.style.opacity = "1";
+    notification.style.transform = "translateY(0)";
+  });
+
+  notificationTimeout = setTimeout(() => {
+    notification.style.opacity = "0";
+    notification.style.transform = "translateY(-6px)";
+    notificationTimeout = setTimeout(() => {
+      notification.remove();
+    }, 200);
+  }, 1800);
+}
+
+async function updateRememberedPanZoom(zoom, panX, panY) {
+  const { rememberPanZoom } = await chrome.storage.local.get([
+    "rememberPanZoom",
+  ]);
+  if (!rememberPanZoom) {
+    return;
+  }
+
+  if (!isPanZoomActive(zoom, panX, panY)) {
+    await chrome.storage.local.remove(["lastPanZoomSettings"]);
+    return;
+  }
+
+  await chrome.storage.local.set({
+    lastPanZoomSettings: { zoom, panX, panY },
+  });
 }
 
 // Function to monitor video style changes
@@ -140,6 +206,7 @@ async function applyTransform(angle, zoom, fill, panX, panY) {
     originalVideoStyles = null;
     lastAppliedSettings = null;
     await chrome.storage.local.remove(["videoSettings"]);
+    await updateRememberedPanZoom(zoom, panX, panY);
     log("Reset applied - cleared storage and restored original styles");
 
     // Disconnect observer since we're resetting
@@ -154,6 +221,7 @@ async function applyTransform(angle, zoom, fill, panX, panY) {
   const settings = { angle, zoom, fill, panX, panY };
   await chrome.storage.local.set({ videoSettings: settings });
   log("Settings saved to storage:", settings);
+  await updateRememberedPanZoom(zoom, panX, panY);
 
   // Save original styles before making any changes
   saveOriginalStyles(video);
@@ -243,14 +311,19 @@ async function checkForNewVideo() {
     const result = await chrome.storage.local.get([
       "persistSettings",
       "videoSettings",
+      "rememberPanZoom",
+      "lastPanZoomSettings",
     ]);
     const persistenceEnabled = result.persistSettings || false;
+    const rememberPanZoom = result.rememberPanZoom || false;
 
     if (!persistenceEnabled) {
       // If persistence is disabled, clear saved settings for the new video
       log("Persistence disabled, clearing saved settings for new video");
       await chrome.storage.local.remove(["videoSettings"]);
-    } else if (result.videoSettings) {
+    }
+
+    if (persistenceEnabled && result.videoSettings) {
       const settings = result.videoSettings;
       const hasSettings =
         settings.angle !== 0 ||
@@ -261,6 +334,11 @@ async function checkForNewVideo() {
 
       if (hasSettings) {
         log("Reapplying saved settings to new video:", settings);
+        const shouldNotify = isPanZoomActive(
+          settings.zoom,
+          settings.panX,
+          settings.panY
+        );
 
         // Function to attempt applying settings with better timing
         const attemptApply = (attempt = 1, maxAttempts = 20) => {
@@ -278,6 +356,9 @@ async function checkForNewVideo() {
                 settings.panX,
                 settings.panY
               );
+              if (shouldNotify) {
+                showPanZoomNotification();
+              }
 
               // Apply again after a short delay to override any YouTube changes
               setTimeout(() => {
@@ -303,6 +384,45 @@ async function checkForNewVideo() {
         };
 
         // Start attempting to apply settings with initial delay
+        setTimeout(() => attemptApply(), 800);
+      }
+    } else if (rememberPanZoom && result.lastPanZoomSettings) {
+      const panZoomSettings = result.lastPanZoomSettings;
+      const hasPanZoom = isPanZoomActive(
+        panZoomSettings.zoom,
+        panZoomSettings.panX,
+        panZoomSettings.panY
+      );
+
+      if (hasPanZoom) {
+        log("Reapplying saved pan/zoom to new video:", panZoomSettings);
+
+        const attemptApply = (attempt = 1, maxAttempts = 20) => {
+          const video = document.querySelector("video");
+          if (video && video.videoWidth > 0 && video.readyState >= 2) {
+            log(
+              `Video ready on attempt ${attempt}, waiting for YouTube to finish loading...`
+            );
+            setTimeout(() => {
+              applyTransform(
+                0,
+                panZoomSettings.zoom,
+                false,
+                panZoomSettings.panX,
+                panZoomSettings.panY
+              );
+              showPanZoomNotification();
+            }, 1000);
+          } else if (attempt < maxAttempts) {
+            log(
+              `Video not ready on attempt ${attempt} (readyState: ${video?.readyState}, videoWidth: ${video?.videoWidth}), retrying...`
+            );
+            setTimeout(() => attemptApply(attempt + 1, maxAttempts), 300);
+          } else {
+            log("Failed to find ready video after maximum attempts");
+          }
+        };
+
         setTimeout(() => attemptApply(), 800);
       }
     }

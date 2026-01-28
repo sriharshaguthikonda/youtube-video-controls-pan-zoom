@@ -6,6 +6,13 @@ A browser extension that adds basic video manipulation controls to YouTube, allo
   <img src="./images/controls.png" alt="Extension Popup">
 </div>
 
+## ✨ Highlights
+
+- Rotate, zoom, and pan videos with precision controls.
+- Preserve full settings across video changes or remember just the latest pan & zoom.
+- Optional saved pan & zoom reset button for quick cleanup.
+- On new videos, a notification appears when pan/zoom is active.
+
 ## 🚀 Installation
 
 Install from Chrome Web Store [here](https://chromewebstore.google.com/detail/youtube-video-controls/cddjdndjpiepihbknbjkjghijabbikmh?authuser=2&hl=en).
