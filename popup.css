@@ -206,6 +206,47 @@ input[type="range"]::-moz-range-thumb {
   margin: 10px 0;
 }
 
+.zoom-presets {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.zoom-preset {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
+  font-size: 11px;
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  color: white;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.zoom-preset:hover {
+  background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
+  transform: translateY(-1px);
+}
+
+.zoom-preset.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .zoom-preset {
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+  }
+
+  .zoom-preset:hover {
+    background: linear-gradient(135deg, #343a40 0%, #212529 100%);
+  }
+
+  .zoom-preset.active {
+    background: linear-gradient(135deg, #3d5afe 0%, #7c4dff 100%);
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   body {
     background: #121316;
