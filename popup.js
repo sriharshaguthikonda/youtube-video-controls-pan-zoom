@@ -94,7 +94,10 @@ function updateUI(settings) {
 
   document.getElementById("zoomSlider").value = currentZoom.toString();
   document.getElementById("zoomValue").textContent =
-    currentZoom.toFixed(1) + "x";
+    currentZoom.toFixed(3) + "x";
+  
+  // Update zoom preset states
+  updateZoomPresets();
 
   document.getElementById("panX").value = currentPanX.toString();
   document.getElementById("panXVal").textContent = currentPanX + "%";
@@ -200,10 +203,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const zoomSlider = document.getElementById("zoomSlider");
   const zoomValue = document.getElementById("zoomValue");
-  zoomSlider.addEventListener("input", () => {
-    currentZoom = parseFloat(zoomSlider.value);
-    zoomValue.textContent = currentZoom.toFixed(1) + "x";
+  
+  // Update zoom value display with ultra-fine precision
+  function updateZoomDisplay(value) {
+    currentZoom = parseFloat(value);
+    zoomValue.textContent = currentZoom.toFixed(3) + "x";
+    updateZoomPresets();
     MessageHandler.sendTransform();
+  }
+  
+  // Update zoom preset button states
+  function updateZoomPresets() {
+    document.querySelectorAll(".zoom-preset").forEach(btn => {
+      const presetZoom = parseFloat(btn.dataset.zoom);
+      if (Math.abs(currentZoom - presetZoom) < 0.01) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+  }
+  
+  zoomSlider.addEventListener("input", () => {
+    updateZoomDisplay(zoomSlider.value);
+  });
+  
+  // Add zoom preset button functionality
+  document.querySelectorAll(".zoom-preset").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const presetZoom = parseFloat(btn.dataset.zoom);
+      zoomSlider.value = presetZoom;
+      updateZoomDisplay(presetZoom);
+    });
   });
 
   const panXSlider = document.getElementById("panX");
