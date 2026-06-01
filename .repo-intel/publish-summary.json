@@ -1,0 +1,25 @@
+﻿{
+    "schemaVersion":  "repo-map-artifact-branch/v1",
+    "repo":  "sriharshaguthikonda/youtube-video-controls-pan-zoom",
+    "generatedAt":  "2026-06-01T06:28:36.4477448Z",
+    "source":  "Repo_maps GitHub footprint publish runner",
+    "publishBranch":  "repo-intel-artifacts",
+    "mapCount":  2,
+    "totalBytes":  75246,
+    "maps":  [
+                 {
+                     "name":  "codex/add-dark-mode-version-for-popup",
+                     "ref":  "refs/remotes/origin/codex/add-dark-mode-version-for-popup",
+                     "commit":  "241094b5ff233f5f2f70b79f0b456a8cdc7125ea",
+                     "path":  ".repo-intel/branches/remote-origin/codex-add-dark-mode-version-for-popup__241094b5ff23/repo-map-full.json",
+                     "bytes":  35899
+                 },
+                 {
+                     "name":  "main",
+                     "ref":  "refs/remotes/origin/main",
+                     "commit":  "24e7bb36ce4599c332bcc6d07aaf7976942431a3",
+                     "path":  ".repo-intel/branches/remote-origin/main__24e7bb36ce45/repo-map-full.json",
+                     "bytes":  32673
+                 }
+             ]
+}
